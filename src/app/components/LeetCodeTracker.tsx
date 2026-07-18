@@ -57,9 +57,10 @@ export default function LeetCodeTracker() {
 
           try {
             // Primary API: Alfa
+            const fetchOpts = { cache: "no-store" as RequestCache };
             const [solvedRes, recentRes] = await Promise.all([
-              fetch(`${BASE}/${cleaned}/solved`),
-              fetch(`${BASE}/${cleaned}/acSubmission?limit=10`),
+              fetch(`${BASE}/${cleaned}/solved?t=${Date.now()}`, fetchOpts),
+              fetch(`${BASE}/${cleaned}/acSubmission?limit=10&t=${Date.now()}`, fetchOpts),
             ]);
 
             if (!solvedRes.ok) throw new Error("Alfa API failed");
@@ -82,7 +83,7 @@ export default function LeetCodeTracker() {
           } catch (err) {
             console.warn(`Primary API failed for ${cleaned}, trying fallback...`);
             // Fallback API: Faisal
-            const fallbackRes = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${cleaned}`);
+            const fallbackRes = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${cleaned}?t=${Date.now()}`, { cache: "no-store" });
             if (fallbackRes.ok) {
               const fallbackData = await fallbackRes.json();
 

@@ -487,7 +487,7 @@ export async function fetchLeetCodeSolvedOnly(username: string): Promise<number>
   }
 
   const clean = encodeURIComponent(cleaned);
-  const res = await fetch(`https://alfa-leetcode-api.onrender.com/${clean}/solved`);
+  const res = await fetch(`https://alfa-leetcode-api.onrender.com/${clean}/solved?t=${Date.now()}`, { cache: 'no-store' as RequestCache });
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
     throw new Error(errBody?.errors?.[0]?.message || `User not found.`);
@@ -551,9 +551,10 @@ export async function fetchLeetCodeStats(username: string, forceSync: boolean = 
 
   try {
     // Fetch solved counts and profile in parallel from PRIMARY API
+    const fetchOpts = { cache: "no-store" as RequestCache };
     const [solvedRes, profileRes] = await Promise.all([
-      fetch(`${BASE}/${clean}/solved`),
-      fetch(`${BASE}/${clean}`),
+      fetch(`${BASE}/${clean}/solved?t=${Date.now()}`, fetchOpts),
+      fetch(`${BASE}/${clean}?t=${Date.now()}`, fetchOpts),
     ]);
 
     if (!solvedRes.ok) throw new Error("Primary API failed");
@@ -574,7 +575,7 @@ export async function fetchLeetCodeStats(username: string, forceSync: boolean = 
     }
 
     try {
-      const upRes = await fetch(`${BASE}/userProfile/${clean}`);
+      const upRes = await fetch(`${BASE}/userProfile/${clean}?t=${Date.now()}`, fetchOpts);
       if (upRes.ok) {
         const up = await upRes.json();
         totalQuestions = up.totalQuestions || undefined;
@@ -594,12 +595,13 @@ export async function fetchLeetCodeStats(username: string, forceSync: boolean = 
     };
 
     localStorage.setItem(cacheKey, JSON.stringify({ data: statsResult, timestamp: Date.now() }));
+      localStorage.setItem(cacheKey, JSON.stringify({ data: statsResult, timestamp: Date.now() }));
     return statsResult;
   } catch (err) {
     console.warn("Primary LeetCode API failed, trying fallback...", err);
     // FALLBACK API
     try {
-      const fallbackRes = await fetch(`https://leetcode-stats-api.herokuapp.com/${clean}`);
+      const fallbackRes = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${clean}?t=${Date.now()}`, { cache: "no-store" as RequestCache });
       if (!fallbackRes.ok) throw new Error("Fallback API failed");
       const fallback = await fallbackRes.json();
       
