@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Mail, CheckCircle2, XCircle, RefreshCw, Trophy, Code2 } from "lucide-react";
+import { Loader2, Mail, CheckCircle2, XCircle, RefreshCw, Trophy, Code2, Clock } from "lucide-react";
 import emailjs from "@emailjs/browser";
 import { getStudents, Student, getLeetCodeProfileUrl, logLeetCodePresence } from "../services/api";
 import { toast } from "sonner";
@@ -15,6 +15,40 @@ export default function LeetCodeTracker() {
   const [loading, setLoading] = useState(false);
   const [sendingEmails, setSendingEmails] = useState(false);
   const [progressData, setProgressData] = useState<LeetCodeProgress[]>([]);
+
+  // Scheduler State
+  const [scheduledTime, setScheduledTime] = useState<string>(localStorage.getItem("auto_email_time") || "");
+  const [isSchedulerActive, setIsSchedulerActive] = useState<boolean>(localStorage.getItem("auto_email_active") === "true");
+
+  useEffect(() => {
+    localStorage.setItem("auto_email_time", scheduledTime);
+  }, [scheduledTime]);
+
+  useEffect(() => {
+    localStorage.setItem("auto_email_active", isSchedulerActive.toString());
+  }, [isSchedulerActive]);
+
+  useEffect(() => {
+    let interval: any;
+    if (isSchedulerActive && scheduledTime) {
+      interval = setInterval(() => {
+        const now = new Date();
+        const currentHour = now.getHours().toString().padStart(2, "0");
+        const currentMinute = now.getMinutes().toString().padStart(2, "0");
+        const currentTime = `${currentHour}:${currentMinute}`;
+        
+        const todayStr = now.toLocaleDateString('en-CA');
+        const lastSentDate = localStorage.getItem("last_auto_email_date");
+
+        if (currentTime === scheduledTime && lastSentDate !== todayStr) {
+          console.log("Triggering scheduled emails...");
+          localStorage.setItem("last_auto_email_date", todayStr);
+          executeSendReminders(true);
+        }
+      }, 60000); // Check every minute
+    }
+    return () => { if (interval) clearInterval(interval); };
+  }, [isSchedulerActive, scheduledTime, progressData, sendingEmails]);
 
   useEffect(() => {
     loadLeetCodeData();
@@ -147,21 +181,29 @@ export default function LeetCodeTracker() {
   };
 
 
-  const handleSendReminders = async () => {
+  const executeSendReminders = async (isAutomated: boolean = false) => {
+    if (progressData.length === 0) return;
+    
     const slackingStudentsWithEmail = progressData.filter(p => !p.hasSolvedToday && p.student.email);
     const slackingStudentsWithoutEmail = progressData.filter(p => !p.hasSolvedToday && !p.student.email);
 
     if (slackingStudentsWithEmail.length === 0) {
-      if (slackingStudentsWithoutEmail.length > 0) {
-        toast.warning(`${slackingStudentsWithoutEmail.length} inactive students have no email linked. Cannot send reminders.`);
-      } else {
-        toast.info("All students have solved a problem today!");
+      if (!isAutomated) {
+        if (slackingStudentsWithoutEmail.length > 0) {
+          toast.warning(`${slackingStudentsWithoutEmail.length} inactive students have no email linked. Cannot send reminders.`);
+        } else {
+          toast.info("All students have solved a problem today!");
+        }
       }
       return;
     }
 
-    if (!confirm(`Are you sure you want to send reminder emails to ${slackingStudentsWithEmail.length} students?\n\nNote: ${slackingStudentsWithoutEmail.length} inactive students will be skipped because they don't have an email on file.`)) {
-      return;
+    if (!isAutomated) {
+      if (!confirm(`Are you sure you want to send reminder emails to ${slackingStudentsWithEmail.length} students?\n\nNote: ${slackingStudentsWithoutEmail.length} inactive students will be skipped because they don't have an email on file.`)) {
+        return;
+      }
+    } else {
+      toast.info(`Automated Scheduler: Initiating background email dispatch to ${slackingStudentsWithEmail.length} inactive students...`);
     }
 
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
@@ -220,6 +262,8 @@ Academic Administration`,
     if (failCount > 0) toast.error(`Failed to send ${ failCount } reminders.`);
   };
 
+  const handleSendReminders = () => executeSendReminders(false);
+
   return (
     <div className="rounded-2xl p-6 mt-6 backdrop-blur-xl animate-fade-in" style={{ background: "rgba(255, 255, 255, 0.75)", border: "1px solid rgba(99, 102, 241, 0.08)" }}>
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
@@ -249,6 +293,34 @@ Academic Administration`,
             Send Alerts to Inactive Students
           </button>
         </div>
+      </div>
+      
+      {/* Scheduler UI */}
+      <div className="mb-6 p-4 rounded-xl flex flex-wrap items-center gap-4 bg-orange-50/50 border border-orange-100">
+        <div className="flex items-center gap-2 text-orange-700 font-semibold">
+          <Clock className="w-4 h-4" />
+          <span>Automated Daily Reminders</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <input 
+            type="time" 
+            className="px-3 py-1.5 rounded-lg border border-orange-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            value={scheduledTime}
+            onChange={(e) => setScheduledTime(e.target.value)}
+            disabled={isSchedulerActive}
+          />
+          <button 
+            onClick={() => setIsSchedulerActive(!isSchedulerActive)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ${isSchedulerActive ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'}`}
+          >
+            {isSchedulerActive ? 'Active (Click to Stop)' : 'Start Scheduler'}
+          </button>
+        </div>
+        {isSchedulerActive && (
+          <p className="text-xs text-orange-600 w-full mt-1">
+            <span className="font-bold">⚠️ Important:</span> For the automated emails to send, you MUST leave this Admin Dashboard tab open in your browser. If you close this tab, the scheduler goes offline.
+          </p>
+        )}
       </div>
 
       {loading ? (

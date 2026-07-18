@@ -18,7 +18,7 @@ import {
   getLanguageName,
   getCodeTemplate,
 } from "../services/codeExecutor";
-import { submitExamResult } from "../services/api";
+import { submitExamResult, getStudentExamResults } from "../services/api";
 import { toast } from "sonner";
 
 interface ExamModuleProps {
@@ -261,6 +261,26 @@ export default function ExamModule({
   const submitExam = async () => {
     setIsSubmitting(true);
     try {
+      // STRICT LIMIT: Verify against DB that student hasn't submitted today
+      const pastResults = await getStudentExamResults(student.registerNumber);
+      const getLocalDateString = (dObj: Date) => {
+        const y = dObj.getFullYear();
+        const m = String(dObj.getMonth() + 1).padStart(2, "0");
+        const d = String(dObj.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
+      };
+      const localToday = getLocalDateString(new Date());
+      const hasSubmitted = pastResults.some(r => r.submittedAt && getLocalDateString(new Date(r.submittedAt)) === localToday);
+      
+      if (hasSubmitted) {
+        toast.error("Security Alert: You have already submitted an exam today. Multiple submissions are strictly denied.");
+        setIsSubmitting(false);
+        setIsTerminated(true);
+        localStorage.removeItem("currentStudent");
+        window.location.reload();
+        return;
+      }
+
       // Calculate MCQ marks (2 marks each)
       const mcqQuestions = question.vivas || question.mcqs || [];
       const mcqScore = mcqQuestions.reduce((score: number, mcq: any) => {
