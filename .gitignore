@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+
+# SQLite databases and temp files
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vercel
+
+# Old test/debug scripts
+test-piston.cjs
+test-wandbox.cjs
+test-wandbox-compilers.cjs
+
+# Old server files (replaced by Supabase)
+server/
