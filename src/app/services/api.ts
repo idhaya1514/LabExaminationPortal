@@ -1330,12 +1330,35 @@ export function getLeetCodeAttendanceMap(): Record<string, Set<string>> {
   const map: Record<string, Set<string>> = {};
   const history = lsGet<Record<string, string[]>>("leetcode_attendance_history", {});
   for (const [regNum, dates] of Object.entries(history)) {
-    for (const d of dates) {
-      if (!map[d]) map[d] = new Set();
-      map[d].add(regNum);
-    }
+    map[regNum] = new Set(dates);
   }
   return map;
+}
+
+// ─── Global Settings (Supabase) ────────────────────────────────────────────────
+
+export async function getGlobalSetting(id: string, defaultValue: string): Promise<string> {
+  try {
+    const { data, error } = await supabase
+      .from("global_settings")
+      .select("value")
+      .eq("id", id)
+      .single();
+    if (error || !data) return defaultValue;
+    return data.value;
+  } catch {
+    return defaultValue;
+  }
+}
+
+export async function setGlobalSetting(id: string, value: string): Promise<void> {
+  try {
+    await supabase
+      .from("global_settings")
+      .upsert({ id, value }, { onConflict: "id" });
+  } catch (err) {
+    console.error("Failed to save global setting", err);
+  }
 }
 
 // --- ONE TIME SCRIPT TO CLEAR IDHAYA'S ATTEMPTS AS REQUESTED ---

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Loader2, Mail, CheckCircle2, XCircle, RefreshCw, Trophy, Code2, Clock } from "lucide-react";
 import emailjs from "@emailjs/browser";
-import { getStudents, Student, getLeetCodeProfileUrl, logLeetCodePresence } from "../services/api";
+import { getStudents, Student, getLeetCodeProfileUrl, logLeetCodePresence, getGlobalSetting, setGlobalSetting } from "../services/api";
 import { toast } from "sonner";
 
 interface LeetCodeProgress {
@@ -16,39 +16,36 @@ export default function LeetCodeTracker() {
   const [sendingEmails, setSendingEmails] = useState(false);
   const [progressData, setProgressData] = useState<LeetCodeProgress[]>([]);
 
-  // Scheduler State
-  const [scheduledTime, setScheduledTime] = useState<string>(localStorage.getItem("auto_email_time") || "");
-  const [isSchedulerActive, setIsSchedulerActive] = useState<boolean>(localStorage.getItem("auto_email_active") === "true");
+  // Global Scheduler State (Supabase)
+  const [scheduledTime, setScheduledTime] = useState<string>("21:00");
+  const [isSchedulerActive, setIsSchedulerActive] = useState<boolean>(false);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(true);
 
+  // Load settings from Supabase on mount
   useEffect(() => {
-    localStorage.setItem("auto_email_time", scheduledTime);
-  }, [scheduledTime]);
+    const loadSettings = async () => {
+      setIsSettingsLoading(true);
+      const time = await getGlobalSetting("auto_email_time", "21:00");
+      const active = await getGlobalSetting("auto_email_active", "false");
+      setScheduledTime(time);
+      setIsSchedulerActive(active === "true");
+      setIsSettingsLoading(false);
+    };
+    loadSettings();
+  }, []);
 
-  useEffect(() => {
-    localStorage.setItem("auto_email_active", isSchedulerActive.toString());
-  }, [isSchedulerActive]);
+  const handleTimeChange = async (newTime: string) => {
+    setScheduledTime(newTime);
+    await setGlobalSetting("auto_email_time", newTime);
+    toast.success("Schedule time updated in database.");
+  };
 
-  useEffect(() => {
-    let interval: any;
-    if (isSchedulerActive && scheduledTime) {
-      interval = setInterval(() => {
-        const now = new Date();
-        const currentHour = now.getHours().toString().padStart(2, "0");
-        const currentMinute = now.getMinutes().toString().padStart(2, "0");
-        const currentTime = `${currentHour}:${currentMinute}`;
-        
-        const todayStr = now.toLocaleDateString('en-CA');
-        const lastSentDate = localStorage.getItem("last_auto_email_date");
-
-        if (currentTime === scheduledTime && lastSentDate !== todayStr) {
-          console.log("Triggering scheduled emails...");
-          localStorage.setItem("last_auto_email_date", todayStr);
-          executeSendReminders(true);
-        }
-      }, 60000); // Check every minute
-    }
-    return () => { if (interval) clearInterval(interval); };
-  }, [isSchedulerActive, scheduledTime, progressData, sendingEmails]);
+  const handleToggleScheduler = async () => {
+    const newState = !isSchedulerActive;
+    setIsSchedulerActive(newState);
+    await setGlobalSetting("auto_email_active", newState.toString());
+    toast.success(newState ? "Cloud scheduler activated!" : "Cloud scheduler stopped.");
+  };
 
   useEffect(() => {
     loadLeetCodeData();
@@ -306,19 +303,20 @@ Academic Administration`,
             type="time" 
             className="px-3 py-1.5 rounded-lg border border-orange-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
             value={scheduledTime}
-            onChange={(e) => setScheduledTime(e.target.value)}
-            disabled={isSchedulerActive}
+            onChange={(e) => handleTimeChange(e.target.value)}
+            disabled={isSchedulerActive || isSettingsLoading}
           />
           <button 
-            onClick={() => setIsSchedulerActive(!isSchedulerActive)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ${isSchedulerActive ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'}`}
+            onClick={handleToggleScheduler}
+            disabled={isSettingsLoading}
+            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 ${isSchedulerActive ? 'bg-orange-500 text-white hover:bg-orange-600' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'}`}
           >
-            {isSchedulerActive ? 'Active (Click to Stop)' : 'Start Scheduler'}
+            {isSchedulerActive ? 'Active (Click to Stop)' : 'Start Cloud Scheduler'}
           </button>
         </div>
         {isSchedulerActive && (
           <p className="text-xs text-orange-600 w-full mt-1">
-            <span className="font-bold">⚠️ Important:</span> For the automated emails to send, you MUST leave this Admin Dashboard tab open in your browser. If you close this tab, the scheduler goes offline.
+            <span className="font-bold">✅ Cloud Scheduler Active:</span> Emails will be dispatched automatically at {scheduledTime} by the GitHub Actions background engine, even if this browser tab is closed or your computer is offline.
           </p>
         )}
       </div>
