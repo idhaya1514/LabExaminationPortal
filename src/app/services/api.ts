@@ -965,6 +965,43 @@ function mapResult(r: any): ExamResult {
   };
 }
 
+export async function syncLocalExamResultsToSupabase(): Promise<void> {
+  if (!supabase) return;
+  const localResultsStr = localStorage.getItem("exam_results");
+  if (!localResultsStr) return;
+  
+  try {
+    const localResults = JSON.parse(localResultsStr);
+    if (!Array.isArray(localResults) || localResults.length === 0) return;
+
+    let syncedCount = 0;
+    for (const result of localResults) {
+      // Sanitize old data format before inserting
+      delete result.total_marks; // generated column
+      if (!result.question_id && result.question?.id) {
+        result.question_id = result.question.id.toString();
+      }
+
+      const { error } = await supabase.from("exam_results").insert(result);
+      if (!error) {
+        syncedCount++;
+      } else {
+        console.warn("Failed to sync a local result:", error);
+      }
+    }
+    
+    if (syncedCount > 0) {
+      // Optional: Clear local storage after syncing to prevent infinite syncs
+      // However, if we clear it, offline mode might lose history. 
+      // For now, we clear the synced ones.
+      localStorage.removeItem("exam_results");
+      console.log(`Successfully synced ${syncedCount} offline exam results to Supabase!`);
+    }
+  } catch (err) {
+    console.error("Error syncing local exam results:", err);
+  }
+}
+
 export async function submitExamResult(
   result: Omit<ExamResult, "id" | "submittedAt">,
 ): Promise<{ id: number; success: boolean }> {
@@ -972,11 +1009,11 @@ export async function submitExamResult(
     student_register_number: result.student.registerNumber,
     student_name: result.student.name,
     student_department: result.student.department || "Unknown",
+    question_id: result.question.id.toString(),
     question: result.question,
     programming_marks: result.programmingMarks || 0,
     mcq_marks: result.mcqMarks || 0,
     observation_marks: result.observationMarks || 0,
-    total_marks: result.totalMarks || 0,
     max_marks: result.maxMarks || 50,
     code: result.code || "",
     code_output: result.codeOutput || "",

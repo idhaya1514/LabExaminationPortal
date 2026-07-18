@@ -83,25 +83,25 @@ interface ContributionGridProps {
 function ContributionGrid({ activityMap }: ContributionGridProps) {
   const cells: Date[] = [];
   const today = new Date();
-  
+
   // Find the start date (120 days ago, aligned to Sunday)
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - 120);
   const startDay = startDate.getDay();
   startDate.setDate(startDate.getDate() - startDay);
-  
+
   const temp = new Date(startDate);
   while (temp <= today) {
     cells.push(new Date(temp));
     temp.setDate(temp.getDate() + 1);
   }
-  
+
   // Group cells into weeks (7 days each)
   const weeks: Date[][] = [];
   for (let i = 0; i < cells.length; i += 7) {
     weeks.push(cells.slice(i, i + 7));
   }
-  
+
   const getGreenShade = (count: number) => {
     if (!count) return "#e2e8f0"; // empty light cell
     if (count === 1) return "#a7f3d0"; // light emerald
@@ -109,7 +109,7 @@ function ContributionGrid({ activityMap }: ContributionGridProps) {
     if (count === 3) return "#059669"; // dark emerald
     return "#047857"; // super dark emerald
   };
-  
+
   return (
     <div className="p-5 rounded-2xl" style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(99,102,241,0.12)" }}>
       <h3 className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5" style={{ color: "#4f46e5" }}>
@@ -251,7 +251,7 @@ export default function Dashboard({
       const lastLogin = new Date(data.lastLoginDate);
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      
+
       const lastLoginStr = getLocalDate(lastLogin);
       const yesterdayStr = getLocalDate(yesterday);
 
@@ -440,10 +440,10 @@ export default function Dashboard({
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-sans text-slate-700">
-      
+
       {/* 1. LEFT SIDEBAR */}
       <aside className="w-[260px] flex flex-col justify-between py-7 px-5 flex-shrink-0 text-slate-400" style={{ background: "linear-gradient(180deg, #0c0f1d 0%, #1a1836 100%)", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-        
+
         <div className="space-y-7">
           {/* Top Logo & App Title */}
           <div className="flex items-center gap-3 px-1">
@@ -481,18 +481,16 @@ export default function Dashboard({
                 <button
                   key={item.id}
                   onClick={() => setDashboardTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-semibold text-[13px] transition-all duration-300 relative group ${
-                    isActive
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-semibold text-[13px] transition-all duration-300 relative group ${isActive
                       ? item.accent === "orange"
                         ? "bg-orange-500/10 text-orange-400"
                         : "bg-indigo-500/10 text-indigo-400"
                       : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]"
-                  }`}
+                    }`}
                 >
                   {isActive && (
-                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full ${
-                      item.accent === "orange" ? "bg-orange-400" : "bg-indigo-400"
-                    }`} style={{ transition: "all 0.3s ease" }} />
+                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full ${item.accent === "orange" ? "bg-orange-400" : "bg-indigo-400"
+                      }`} style={{ transition: "all 0.3s ease" }} />
                   )}
                   <Icon className={`w-[18px] h-[18px] transition-transform duration-300 ${isActive ? "" : "group-hover:scale-110"}`} />
                   {item.label}
@@ -504,7 +502,7 @@ export default function Dashboard({
 
         {/* Sidebar Footer (Logout Action) */}
         <div className="space-y-3">
-          
+
           {/* Quick Streak indicator */}
           <div className="flex items-center gap-2.5 p-3 bg-orange-500/[0.06] border border-orange-500/10 rounded-xl text-orange-400 group hover:bg-orange-500/[0.1] transition-colors duration-300">
             <Flame className="w-4 h-4 group-hover:animate-bounce" />
@@ -524,7 +522,7 @@ export default function Dashboard({
 
       {/* 2. RIGHT CONTENT PANE */}
       <main className="flex-grow flex flex-col overflow-hidden" style={{ background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)" }}>
-        
+
         {/* Top Header Bar */}
         <header className="h-16 border-b border-slate-200 bg-white/85 backdrop-blur-xl px-8 flex items-center justify-between flex-shrink-0 sticky top-0 z-30">
           <div>
@@ -538,7 +536,7 @@ export default function Dashboard({
 
           <div className="flex items-center gap-3">
             {/* Removed Database connection badge as per user request */}
- 
+
             {/* Profile modal button */}
             <button
               onClick={() => setShowProfileModal(true)}
@@ -552,7 +550,7 @@ export default function Dashboard({
 
         {/* Scrollable Panel Area */}
         <div className="flex-grow overflow-y-auto p-6 md:p-8 space-y-6">
-          
+
           {serverError && (
             <div className="flex items-start gap-3 px-5 py-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-xs font-semibold animate-fade-in shadow-sm">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -564,13 +562,13 @@ export default function Dashboard({
           )}
 
           <div className="flex-grow">
-            
+
             {/* 0. HOME / OVERVIEW TAB CONTENT */}
             {dashboardTab === "home" && (
               <div className="space-y-6">
-                
+
                 {/* Welcome Banner */}
-                <div 
+                <div
                   className="p-8 rounded-3xl relative overflow-hidden text-white flex flex-col justify-center shadow-md shadow-indigo-500/5"
                   style={{
                     background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
@@ -589,7 +587,7 @@ export default function Dashboard({
 
                 {/* Top Section: Welcome Details & LeetCode Milestone Progress */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  
+
                   {/* Quote of the Day Card */}
                   <div style={cardStyles} className="lg:col-span-2 flex flex-col justify-between relative overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center gap-2 text-indigo-600 mb-4">
@@ -616,7 +614,7 @@ export default function Dashboard({
                         <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase">Target Rings</span>
                         <Code2 className="w-4 h-4 text-orange-500" />
                       </div>
-                      
+
                       <div className="grid grid-cols-3 gap-2 text-center pt-2">
                         {/* Easy Ring */}
                         <div className="flex flex-col items-center">
@@ -662,7 +660,7 @@ export default function Dashboard({
 
                 {/* Quick Stats Grid Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  
+
                   {/* LeetCode Solved Card */}
                   <div style={cardStyles} className="flex flex-col justify-between relative overflow-hidden group hover:-translate-y-1.5 hover:shadow-xl hover:shadow-indigo-500/[0.06] hover:border-indigo-500/30 cursor-default">
                     <div className="absolute inset-0 bg-gradient-to-br from-orange-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
@@ -735,12 +733,11 @@ export default function Dashboard({
                       <div className="mt-5 pt-4" style={{ borderTop: "1px solid rgba(15,23,42,0.06)" }}>
                         <div className="flex gap-1">
                           {[...Array(7)].map((_, i) => (
-                             <div
-                               key={i}
-                               className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
-                                 i < Math.min(streak, 7) ? "bg-gradient-to-r from-orange-400 to-rose-500" : "bg-slate-200"
-                               }`}
-                             />
+                            <div
+                              key={i}
+                              className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i < Math.min(streak, 7) ? "bg-gradient-to-r from-orange-400 to-rose-500" : "bg-slate-200"
+                                }`}
+                            />
                           ))}
                         </div>
                         <p className="text-[10px] font-medium mt-2" style={{ color: "#64748b" }}>Keep coding daily!</p>
@@ -752,7 +749,7 @@ export default function Dashboard({
 
                 {/* Split Bottom Section: Contribution calendar & Timeline attempts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  
+
                   {/* Contribution Grid Left Side */}
                   <div className="lg:col-span-2">
                     <div style={cardStyles} className="h-full">
@@ -784,16 +781,15 @@ export default function Dashboard({
                                     <div className="flex items-center justify-between">
                                       <h4 className="text-[11px] font-black text-slate-800 line-clamp-1">{res.questionTitle}</h4>
                                       <span className="text-[9px] font-bold text-slate-500">
-                                        {new Date(res.submittedAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                                        {new Date(res.submittedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                       </span>
                                     </div>
                                     <div className="flex items-center justify-between mt-0.5 text-[10px] font-semibold text-slate-500">
                                       <span>Marks: {res.totalMarks}%</span>
-                                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                        isMalpractice ? "bg-red-500/10 text-red-700 border border-red-500/15" :
-                                        isPassed ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/15" : 
-                                        "bg-amber-500/10 text-amber-700 border border-amber-500/15"
-                                      }`}>
+                                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isMalpractice ? "bg-red-500/10 text-red-700 border border-red-500/15" :
+                                          isPassed ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/15" :
+                                            "bg-amber-500/10 text-amber-700 border border-amber-500/15"
+                                        }`}>
                                         {res.status || "Completed"}
                                       </span>
                                     </div>
@@ -810,7 +806,7 @@ export default function Dashboard({
                 </div>
 
                 {/* Assigned test Quick Launch panel */}
-                <div 
+                <div
                   className="p-6 rounded-2xl border transition-all"
                   style={{
                     background: (selectedQuestion || availableQuestions.length > 0) && !hasSubmittedToday
@@ -836,12 +832,12 @@ export default function Dashboard({
                           ? selectedQuestion
                             ? `You have been assigned the exam question: "${selectedQuestion.title}". Please launch the evaluation to complete it.`
                             : `You have a pending evaluation test. Please launch the evaluation to generate your question.`
-                          : hasSubmittedToday 
+                          : hasSubmittedToday
                             ? "You have already completed today's evaluation test. Great job!"
                             : "There is no evaluation test assigned to you at this time."}
                       </p>
                     </div>
-                    
+
                     {(selectedQuestion || availableQuestions.length > 0) && !hasSubmittedToday && (
                       <button
                         onClick={() => setDashboardTab("evaluation")}
@@ -874,7 +870,7 @@ export default function Dashboard({
                     <p className="text-sm text-slate-500 mb-8 max-w-sm">
                       Excellent work! Your lab examination has been successfully recorded for today.
                     </p>
-                    
+
                     <div className="w-full max-w-sm rounded-2xl p-6 mb-8 relative overflow-hidden" style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)" }}>
                       <div className="absolute right-0 bottom-0 opacity-5 transform translate-x-4 translate-y-4">
                         <Trophy className="w-32 h-32" />
@@ -955,7 +951,7 @@ export default function Dashboard({
                                   <span className="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider" style={{ background: diff.bg, color: diff.text, border: `1px solid ${diff.border}` }}>
                                     {selectedQuestion.difficulty}
                                   </span>
-                                  )}
+                                )}
                                 <span className="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider font-mono" style={{ background: "rgba(99,102,241,0.06)", color: "#4f46e5", border: "1px solid rgba(99,102,241,0.12)" }}>
                                   {selectedQuestion.language}
                                 </span>
@@ -1041,14 +1037,14 @@ export default function Dashboard({
                   </div>
                 ) : leetStats ? (
                   <div className="space-y-6 relative z-10">
-                    
+
                     {/* Hero Stats Banner */}
                     <div className="rounded-2xl p-6 relative overflow-hidden text-white"
                       style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)" }}
                     >
                       <div className="absolute right-[-5%] top-[-20%] w-56 h-56 rounded-full bg-orange-500/10 blur-3xl" />
                       <div className="absolute left-[40%] bottom-[-15%] w-40 h-40 rounded-full bg-indigo-400/10 blur-2xl" />
-                      
+
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="flex items-center gap-5">
                           {/* Donut Chart */}
@@ -1099,7 +1095,7 @@ export default function Dashboard({
 
                     {/* Metric Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      
+
                       {/* Easy Card */}
                       <div className="group relative bg-white border border-emerald-250 rounded-2xl p-5 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-500/[0.06] transition-all duration-400 overflow-hidden cursor-default" style={{ borderColor: "rgba(16,185,129,0.15)" }}>
                         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl" />
@@ -1246,18 +1242,18 @@ export default function Dashboard({
           `}</style>
 
           <div className="absolute inset-0" onClick={() => setShowProfileModal(false)} />
-          
+
           <div className="w-full max-w-[420px] h-full shadow-2xl relative flex flex-col animate-slide-in-right" style={{ background: "#ffffff", borderLeft: "1px solid rgba(99,102,241,0.15)" }}>
-            
+
             {/* Hero Header */}
             <div className="relative overflow-hidden flex-shrink-0" style={{ background: "linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)" }}>
               <div className="absolute right-[-8%] top-[-25%] w-56 h-56 rounded-full bg-indigo-500/10 blur-3xl" />
               <div className="absolute left-[20%] bottom-[-15%] w-40 h-40 rounded-full bg-blue-400/10 blur-2xl" />
-              
+
               <div className="relative z-10 px-7 pt-6 pb-8">
                 <div className="flex items-center justify-between mb-6">
                   <span className="bg-white/10 px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase text-indigo-200 border border-white/[0.08]">Student Profile</span>
-                  <button 
+                  <button
                     onClick={() => setShowProfileModal(false)}
                     className="p-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white border border-white/[0.06] transition-all duration-300"
                   >
@@ -1267,7 +1263,7 @@ export default function Dashboard({
 
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <div 
+                    <div
                       className="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-xl shadow-indigo-500/20 ring-2 ring-white/10"
                       style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" }}
                     >

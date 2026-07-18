@@ -26,6 +26,7 @@ import {
   clearAllExamData,
   deleteExamResult,
   checkServerHealth,
+  syncLocalExamResultsToSupabase,
 } from "../services/api";
 import { toast } from "sonner";
 import {
@@ -126,7 +127,12 @@ export default function AdminPanel({
 
 
   useEffect(() => {
-    loadDashboardData();
+    const init = async () => {
+      await syncLocalExamResultsToSupabase();
+      await loadDashboardData();
+    };
+    init();
+
     checkServerHealth().then((isOnline) => setIsServerOffline(!isOnline));
 
     const savedSchedule = localStorage.getItem("exam_schedule");
