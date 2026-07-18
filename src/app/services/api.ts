@@ -1330,7 +1330,10 @@ export function getLeetCodeAttendanceMap(): Record<string, Set<string>> {
   const map: Record<string, Set<string>> = {};
   const history = lsGet<Record<string, string[]>>("leetcode_attendance_history", {});
   for (const [regNum, dates] of Object.entries(history)) {
-    map[regNum] = new Set(dates);
+    for (const d of dates) {
+      if (!map[d]) map[d] = new Set();
+      map[d].add(regNum);
+    }
   }
   return map;
 }
