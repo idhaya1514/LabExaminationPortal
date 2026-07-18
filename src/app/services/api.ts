@@ -56,6 +56,7 @@ export interface ExamResult {
     department?: string;
   };
   question: string;
+  questionId?: string | number;
   programmingMarks: number;
   mcqMarks: number;
   observationMarks?: number;
@@ -987,6 +988,7 @@ export async function syncLocalExamResultsToSupabase(): Promise<void> {
         syncedCount++;
       } else {
         console.warn("Failed to sync a local result:", error);
+        window.alert("Auto-Sync Failed for Student " + result.student_register_number + ": " + (error.message || JSON.stringify(error)));
       }
     }
     
@@ -1009,7 +1011,7 @@ export async function submitExamResult(
     student_register_number: result.student.registerNumber,
     student_name: result.student.name,
     student_department: result.student.department || "Unknown",
-    question_id: result.question.id.toString(),
+    question_id: result.questionId ? result.questionId.toString() : "0",
     question: result.question,
     programming_marks: result.programmingMarks || 0,
     mcq_marks: result.mcqMarks || 0,
