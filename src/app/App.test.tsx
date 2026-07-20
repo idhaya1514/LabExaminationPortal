@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import App from './App';
 import React from 'react';
 
@@ -10,42 +10,49 @@ vi.mock('./services/api', () => ({
     registerNumber: 'TEST001',
     department: 'Computer Science',
   }),
+  getStudents: vi.fn().mockResolvedValue([]),
+  getExamResults: vi.fn().mockResolvedValue([]),
   checkServerHealth: vi.fn().mockResolvedValue(true),
+  syncLocalExamResultsToSupabase: vi.fn().mockResolvedValue(true),
 }));
 
-// ─── Router / Navigation Tests ────────────────────────────────────────────────
 describe('App — Router / Page Navigation', () => {
-  it('starts on the Student Login page by default', () => {
-    render(<App />);
-    expect(screen.getByText('Student Login')).toBeInTheDocument();
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
   });
 
-  it('navigates to Admin Portal page when Admin Panel link is clicked', () => {
+  it('starts on the LoginPage page by default', () => {
     render(<App />);
-    // Click the Admin Panel link on the student login page
-    fireEvent.click(screen.getByText('Admin Panel'));
-    // Should now show the Admin Portal heading
-    expect(screen.getByText('Admin Portal')).toBeInTheDocument();
+    expect(screen.getByText('Portal Access')).toBeInTheDocument();
   });
 
-  it('navigates back to Student Login from Admin Portal when Back is clicked', () => {
+  it('navigates to Admin Panel when admin logs in successfully', async () => {
     render(<App />);
-    // Go to Admin Portal
-    fireEvent.click(screen.getByText('Admin Panel'));
-    expect(screen.getByText('Admin Portal')).toBeInTheDocument();
-    // Click back
-    fireEvent.click(screen.getByText('Back to Student Login'));
-    // Should be back on Student Login
-    expect(screen.getByText('Student Login')).toBeInTheDocument();
+    
+    // Switch to Admin tab
+    fireEvent.click(screen.getByText('Admin', { selector: 'button' }));
+    
+    // Fill admin form
+    fireEvent.change(screen.getByPlaceholderText('Enter administrator username'), {
+      target: { value: 'sscet' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('Enter security password'), {
+      target: { value: 'adminsscet@2026' },
+    });
+    
+    // Submit
+    fireEvent.submit(document.querySelector('form')!);
+    
+    // Should navigate to Admin Dashboard
+    await waitFor(() => {
+      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument();
+    });
   });
 
   it('shows only the login page when no session is stored', () => {
-    // Ensure localStorage is clean
-    localStorage.clear();
-    sessionStorage.clear();
     render(<App />);
-    expect(screen.getByText('Student Login')).toBeInTheDocument();
-    // Admin panel and dashboard should NOT be visible
+    expect(screen.getByText('Portal Access')).toBeInTheDocument();
     expect(screen.queryByText('Admin Dashboard')).not.toBeInTheDocument();
   });
 });

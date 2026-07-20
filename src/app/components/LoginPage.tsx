@@ -26,6 +26,8 @@ import {
   updateStudent,
   cleanLeetCodeUsername,
   autoAssignRandomQuestion,
+  loginStudent,
+  resetStudentPassword,
 } from "../services/api";
 import emailjs from "@emailjs/browser";
 import { toast } from "sonner";
@@ -259,12 +261,7 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
 
     setIsLoading(true);
     try {
-      const student = await getStudentByEmail(loginEmail.trim());
-
-      if (student.password && student.password !== loginPassword) {
-        setError("Incorrect password. Please try again.");
-        return;
-      }
+      const student = await loginStudent(loginEmail.trim(), loginPassword);
 
       if (rememberMe) {
         localStorage.setItem("remembered_email", loginEmail.trim());
@@ -318,36 +315,10 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
 
     setForgotLoading(true);
     try {
-      const student = await getStudentByEmail(forgotEmail.trim());
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-      if (!serviceId || serviceId === "your_emailjs_service_id" || !templateId || templateId === "your_emailjs_template_id") {
-        toast.warning("EmailJS is not configured. Bypassing email verification.");
-        setGeneratedCode("123456");
-        setResetStep("code");
-        setForgotError("EmailJS is not configured. Use verification code '123456' to proceed (Development Bypass).");
-        return;
-      }
-
-      await emailjs.send(
-        serviceId,
-        templateId,
-        {
-          to_name: student.name,
-          name: student.name,
-          to_email: student.email || forgotEmail.trim(),
-          email: student.email || forgotEmail.trim(),
-          message: `Your SSCET password reset verification code is: ${code}. Please enter this code in the login page to reset your password.`,
-        },
-        publicKey
-      );
-
-      setGeneratedCode(code);
-      setResetStep("code");
+      await resetStudentPassword(forgotEmail.trim());
+      toast.success("Password reset link sent to your email.");
+      setIsForgotOpen(false); // Close modal since we use Supabase email link
+      setForgotEmail("");
     } catch (err: any) {
       setForgotError(err.message || "Failed to initiate password reset.");
     } finally {
@@ -356,15 +327,8 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
   };
 
   const handleVerifyCode = (e: React.FormEvent) => {
+    // Deprecated with Supabase Auth reset links
     e.preventDefault();
-    setForgotError("");
-    if (!resetCode.trim()) return setForgotError("Please enter the verification code.");
-
-    if (resetCode.trim() === generatedCode) {
-      setResetStep("password");
-    } else {
-      setForgotError("Invalid verification code. Please try again.");
-    }
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -592,7 +556,7 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. John Doe"
+                  placeholder="e.g. Anitha"
                   style={inputStyle}
                   onFocus={onInputFocus}
                   onBlur={onInputBlur}
@@ -604,7 +568,7 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. john.doe@gmail.com"
+                  placeholder="e.g. anitha@gmail.com"
                   style={inputStyle}
                   onFocus={onInputFocus}
                   onBlur={onInputBlur}
@@ -651,7 +615,7 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
                   type="text"
                   value={leetCodeUsername}
                   onChange={(e) => handleUsernameChange(e.target.value)}
-                  placeholder="e.g. john_doe"
+                  placeholder="e.g. anitha"
                   style={inputStyle}
                   onFocus={onInputFocus}
                   onBlur={onInputBlur}
@@ -663,7 +627,7 @@ export default function LoginPage({ onLogin, onAdminLogin }: LoginPageProps) {
                   type="text"
                   value={leetCodeUrl}
                   onChange={(e) => handleUrlChange(e.target.value)}
-                  placeholder="e.g. https://leetcode.com/u/john_doe"
+                  placeholder="e.g. https://leetcode.com/u/anitha"
                   style={inputStyle}
                   onFocus={onInputFocus}
                   onBlur={onInputBlur}

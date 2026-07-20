@@ -201,6 +201,7 @@ export default function AdminPanel({
         "Student Name": r.student.name,
         "Register Number": r.student.registerNumber,
         Department: r.student.department,
+        "LeetCode Username": r.student.leetCodeUsername || "N/A",
         "Question Title": r.question,
         "Programming Marks (30)": r.programmingMarks,
         "MCQ Marks (20)": r.mcqMarks,

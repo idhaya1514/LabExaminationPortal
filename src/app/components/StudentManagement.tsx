@@ -272,7 +272,7 @@ export default function StudentManagement({ onBack }: StudentManagementProps) {
 
                 <Field label="Student Name *" icon={Users}>
                   <input type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., John Doe" className={inputCls} style={getIS("name")}
+                    placeholder="e.g., Anitha" className={inputCls} style={getIS("name")}
                     onFocus={() => setFocusedField("name")} onBlur={() => setFocusedField(null)} />
                 </Field>
 
@@ -285,13 +285,13 @@ export default function StudentManagement({ onBack }: StudentManagementProps) {
 
                 <Field label="Email Address" icon={Mail}>
                   <input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="e.g., johndoe@gmail.com" className={inputCls} style={getIS("email")}
+                    placeholder="e.g., anitha@gmail.com" className={inputCls} style={getIS("email")}
                     onFocus={() => setFocusedField("email")} onBlur={() => setFocusedField(null)} />
                 </Field>
 
                 <Field label="LeetCode Username / URL" icon={Code2}>
                   <input type="text" value={formData.leetCodeUsername} onChange={e => setFormData({ ...formData, leetCodeUsername: e.target.value })}
-                    placeholder="e.g., john_doe or leetcode.com/u/john_doe" className={inputCls} style={getIS("lc")}
+                    placeholder="e.g., anitha or leetcode.com/u/anitha" className={inputCls} style={getIS("lc")}
                     onFocus={() => setFocusedField("lc")} onBlur={() => setFocusedField(null)} />
                 </Field>
               </div>

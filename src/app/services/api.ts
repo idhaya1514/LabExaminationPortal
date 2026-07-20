@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { supabase, isSupabaseConfigured } from "./supabaseClient";
+export { supabase };
 import defaultQuestions from "../data/default_questions.json";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
@@ -54,6 +55,7 @@ export interface ExamResult {
     name: string;
     registerNumber: string;
     department?: string;
+    leetCodeUsername?: string;
   };
   question: string;
   questionId?: string | number;
@@ -180,7 +182,7 @@ export async function getStudents(): Promise<Student[]> {
         .select("*")
         .order("name");
       if (error) throw error;
-      const remote = (data ?? []).map((r) => ({
+      return (data ?? []).map((r) => ({
         id: r.id,
         name: r.name,
         registerNumber: r.register_number,
@@ -189,14 +191,6 @@ export async function getStudents(): Promise<Student[]> {
         leetCodeUsername: r.leet_code_username,
         createdAt: r.created_at,
       }));
-      // Merge remote and local to handle hybrid databases / fallbacks
-      const merged = [...remote];
-      for (const l of local) {
-        if (!merged.some(r => r.registerNumber.toLowerCase() === l.registerNumber.toLowerCase())) {
-          merged.push(l);
-        }
-      }
-      return merged;
     } catch (e) {
       console.warn("[Supabase] getStudents failed, using localStorage:", e);
     }
@@ -290,11 +284,74 @@ export function getLeetCodeProfileUrl(usernameOrUrl: string | undefined): string
   return `https://leetcode.com/u/${cleaned}/`;
 }
 
+export async function loginStudent(email: string, password?: string): Promise<Student> {
+  if (!email) throw new Error("Email is required");
+
+  return run(
+    async () => {
+      if (password) {
+        const { error: authError } = await supabase!.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+        if (authError) throw new Error(authError.message);
+      }
+      
+      const { data, error } = await supabase!
+        .from("students")
+        .select("*")
+        .eq("email", email.trim().toLowerCase())
+        .single();
+      if (error) throw new Error("Email not found in database. Please register first.");
+      
+      return {
+        id: data.id,
+        name: data.name,
+        registerNumber: data.register_number,
+        email: data.email,
+        password: data.password, // Keep for fallback compatibility
+        department: data.department,
+        leetCodeUsername: data.leet_code_username,
+        createdAt: data.created_at,
+      };
+    },
+    () => Promise.reject("Not implemented via REST"),
+    () => {
+      const s = lsStudents().find(
+        (s) => (s.email || "").trim().toLowerCase() === email.trim().toLowerCase(),
+      );
+      if (!s) throw new Error("Email not found. Please register first.");
+      if (password && s.password && s.password !== password) throw new Error("Incorrect password.");
+      return s;
+    },
+  );
+}
+
+export async function resetStudentPassword(email: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new Error("Supabase is not configured. Cannot reset password.");
+  const { error } = await supabase!.auth.resetPasswordForEmail(email.trim().toLowerCase());
+  if (error) throw new Error(error.message);
+}
+
+export async function updateStudentPassword(newPassword: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new Error("Supabase is not configured.");
+  const { error } = await supabase!.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(error.message);
+}
+
 export async function createStudent(
   student: Omit<Student, "id" | "createdAt">,
 ): Promise<Student> {
   return run(
     async () => {
+      if (student.password && student.email) {
+        const { error: authError } = await supabase!.auth.signUp({
+          email: student.email.trim().toLowerCase(),
+          password: student.password,
+        });
+        if (authError) throw new Error(`Auth Error: ${authError.message}`);
+      }
+
       const { data, error } = await supabase!
         .from("students")
         .insert({
@@ -904,14 +961,20 @@ export async function assignQuestion(
 export async function autoAssignRandomQuestion(
   registerNumber: string,
 ): Promise<any> {
+  // Check if already assigned
+  const existing = await getAssignedQuestion(registerNumber);
+  if (existing) {
+    return { id: existing.assignmentId, registerNumber, questionId: existing.questionId };
+  }
+
   const allQs = await getQuestions();
-  if (allQs.length === 0) throw new Error("No questions available to assign");
+  if (allQs.length === 0) return null; // Or return instead of throw error, so login doesn't fail
   
   const randomQ = allQs[Math.floor(Math.random() * allQs.length)];
   
   return run(
     async () => {
-      // 1. Delete existing assignment
+      // 1. Delete existing assignment (just in case)
       await supabase!.from("assigned_questions").delete().eq("student_register_number", registerNumber.trim());
       // 2. Insert new
       const { data, error } = await supabase!
@@ -947,6 +1010,7 @@ function mapResult(r: any): ExamResult {
       name: r.student_name,
       registerNumber: r.student_register_number,
       department: r.student_department,
+      leetCodeUsername: r.student_leetcode_username,
     },
     question: r.question,
     programmingMarks: r.programming_marks,
@@ -1013,6 +1077,7 @@ export async function submitExamResult(
     student_register_number: result.student.registerNumber,
     student_name: result.student.name,
     student_department: result.student.department || "Unknown",
+    student_leetcode_username: result.student.leetCodeUsername || null,
     question_id: result.questionId ? result.questionId.toString() : "0",
     question: result.question,
     programming_marks: result.programmingMarks || 0,
@@ -1047,6 +1112,7 @@ export async function submitExamResult(
           studentRegisterNumber: result.student.registerNumber,
           studentName: result.student.name,
           studentDepartment: result.student.department,
+          studentLeetCodeUsername: result.student.leetCodeUsername,
           question: result.question,
           programmingMarks: result.programmingMarks,
           mcqMarks: result.mcqMarks,
@@ -1163,7 +1229,7 @@ export async function getStudentExamResults(
       registerNumber.trim().toLowerCase(),
   );
 
-  if (SUPABASE_CONFIGURED && supabase) {
+  if (isSupabaseConfigured && supabase) {
     try {
       const { data, error } = await supabase
         .from("exam_results")

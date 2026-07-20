@@ -1,6 +1,7 @@
 ALTER TABLE public.exam_results 
 ADD COLUMN IF NOT EXISTS student_name text,
 ADD COLUMN IF NOT EXISTS student_department text,
+ADD COLUMN IF NOT EXISTS student_leetcode_username text,
 ADD COLUMN IF NOT EXISTS question jsonb,
 ADD COLUMN IF NOT EXISTS programming_marks numeric,
 ADD COLUMN IF NOT EXISTS mcq_marks numeric,

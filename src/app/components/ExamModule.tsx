@@ -22,7 +22,7 @@ import { submitExamResult, getStudentExamResults } from "../services/api";
 import { toast } from "sonner";
 
 interface ExamModuleProps {
-  student: { name: string; registerNumber: string; department?: string };
+  student: { name: string; registerNumber: string; department?: string; leetCodeUsername?: string; };
   question: any;
   onComplete: (results: any) => void;
   onBack: () => void;
@@ -295,6 +295,7 @@ export default function ExamModule({
           name: student.name,
           registerNumber: student.registerNumber,
           department: student.department || "Unknown",
+          leetCodeUsername: student.leetCodeUsername,
         },
         question: question.title,
         questionId: question.id,

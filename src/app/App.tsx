@@ -11,7 +11,7 @@ import StudentPerformance from "./components/StudentPerformance";
 import DailyTracker from "./components/DailyTracker";
 import StudentProfile from "./components/StudentProfile";
 import { Toaster } from "./components/ui/sonner";
-import { getStudent } from "./services/api";
+import { getStudent, supabase, updateStudentPassword } from "./services/api";
 
 type Page =
   | "login"
@@ -74,6 +74,31 @@ export default function App() {
     if (adminSession === "true") {
       setIsAdminLoggedIn(true);
       setCurrentPage(adminPage || "admin");
+    }
+
+    // Handle Supabase Auth state changes (specifically password recovery)
+    if (supabase) {
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
+        if (event === "PASSWORD_RECOVERY") {
+          const newPassword = prompt("Password Recovery Mode: Please enter your new password (min 6 characters):");
+          if (newPassword && newPassword.length >= 6) {
+            try {
+              await updateStudentPassword(newPassword);
+              alert("Password updated successfully! You can now log in with your new password.");
+            } catch (err: any) {
+              alert("Failed to update password: " + err.message);
+            }
+          } else if (newPassword) {
+            alert("Password must be at least 6 characters. Please refresh and try the recovery link again.");
+          }
+          // Clear hash and force user to login page
+          window.location.hash = "";
+          setCurrentPage("login");
+        }
+      });
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
     }
   }, []);
 
