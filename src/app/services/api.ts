@@ -664,8 +664,8 @@ export async function fetchLeetCodeStats(username: string, forceSync: boolean = 
       if (!fallbackRes.ok) throw new Error("Fallback API failed");
       const fallback = await fallbackRes.json();
       
-      if (fallback.status !== "success") {
-        throw new Error(fallback.message || "User not found");
+      if (fallback.errors && fallback.errors.length > 0) {
+        throw new Error(fallback.errors[0]?.message || "User not found");
       }
 
       const statsResult = {
