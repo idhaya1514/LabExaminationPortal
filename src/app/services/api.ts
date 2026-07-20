@@ -182,20 +182,22 @@ export async function getStudents(): Promise<Student[]> {
         .select("*")
         .order("name");
       if (error) throw error;
-      return (data ?? []).map((r) => ({
-        id: r.id,
-        name: r.name,
-        registerNumber: r.register_number,
-        department: r.department,
-        email: r.email,
-        leetCodeUsername: r.leet_code_username,
-        createdAt: r.created_at,
-      }));
+      return (data ?? [])
+        .filter((r) => r.email && r.email.trim() !== "" && r.leet_code_username && r.leet_code_username.trim() !== "")
+        .map((r) => ({
+          id: r.id,
+          name: r.name,
+          registerNumber: r.register_number,
+          department: r.department,
+          email: r.email,
+          leetCodeUsername: r.leet_code_username,
+          createdAt: r.created_at,
+        }));
     } catch (e) {
       console.warn("[Supabase] getStudents failed, using localStorage:", e);
     }
   }
-  return local;
+  return local.filter(s => s.email && s.email.trim() !== "" && s.leetCodeUsername && s.leetCodeUsername.trim() !== "");
 }
 
 export async function getStudent(registerNumber: string): Promise<Student> {

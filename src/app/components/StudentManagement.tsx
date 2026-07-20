@@ -111,10 +111,10 @@ export default function StudentManagement({ onBack }: StudentManagementProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name.trim() || !formData.registerNumber.trim() || !formData.department) { toast.warning("Please fill in all required fields"); return; }
+    if (!formData.name.trim() || !formData.registerNumber.trim() || !formData.department || !formData.email.trim() || !formData.leetCodeUsername.trim()) { toast.warning("Please fill in all required fields including Email and LeetCode Username"); return; }
     setIsSaving(true);
     try {
-      const payload = { name: formData.name.trim(), registerNumber: formData.registerNumber.trim().toUpperCase(), department: formData.department, email: formData.email.trim() || undefined, leetCodeUsername: formData.leetCodeUsername.trim() || undefined };
+      const payload = { name: formData.name.trim(), registerNumber: formData.registerNumber.trim().toUpperCase(), department: formData.department, email: formData.email.trim(), leetCodeUsername: formData.leetCodeUsername.trim() };
       if (editingId) { await updateStudent(editingId, payload); toast.success("Student updated successfully"); }
       else { await createStudent(payload); toast.success(`${payload.name} registered successfully`); }
       resetForm(); await loadStudents();
