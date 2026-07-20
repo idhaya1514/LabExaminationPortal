@@ -942,7 +942,7 @@ export default function StudentPerformance({ onBack }: Props) {
 
         <p className="mt-4 text-center text-xs" style={{ color: "#64748b" }}>
           Showing {students.length} student{students.length !== 1 ? "s" : ""} ·
-          SSCET Exam DB
+          SSCET Portal
         </p>
         </>
         )}

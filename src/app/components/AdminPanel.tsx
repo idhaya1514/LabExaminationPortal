@@ -1049,7 +1049,7 @@ export default function AdminPanel({
             </p>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>Supabase · SSCET Exam DB</p>
+              <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>SSCET Portal</p>
             </div>
           </div>
         </div>
