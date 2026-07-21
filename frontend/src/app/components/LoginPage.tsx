@@ -343,6 +343,10 @@ export default function LoginPage({
 
     if (!adminUsername.trim()) return setError("Please enter your username.");
     if (!adminPassword) return setError("Please enter your password.");
+    if (adminPassword.length < 6)
+      return setError("Password must be at least 6 characters.");
+    if (adminPassword.length > 25)
+      return setError("Password must be at most 25 characters.");
 
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 400));
