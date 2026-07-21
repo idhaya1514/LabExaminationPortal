@@ -37,7 +37,7 @@ export default function StaffManagement() {
   const fetchStaffs = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8085/api/staff/all");
+      const res = await fetch("https://lab-exam-backend.onrender.com/api/staff/all");
       if (res.ok) {
         const data = await res.json();
         setStaffs(data);
@@ -53,7 +53,7 @@ export default function StaffManagement() {
 
   const fetchAssignments = async () => {
     try {
-      const res = await fetch("http://localhost:8085/api/staff/assignments");
+      const res = await fetch("https://lab-exam-backend.onrender.com/api/staff/assignments");
       if (res.ok) {
         const data = await res.json();
         setAssignments(data);
@@ -76,7 +76,7 @@ export default function StaffManagement() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8085/api/staff/create", {
+      const res = await fetch("https://lab-exam-backend.onrender.com/api/staff/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -170,7 +170,7 @@ export default function StaffManagement() {
 
       const results = [];
       for (const assignment of staffAssignments) {
-        const res = await fetch("http://localhost:8085/api/staff/assign", {
+        const res = await fetch("https://lab-exam-backend.onrender.com/api/staff/assign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(assignment),

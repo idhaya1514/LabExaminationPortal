@@ -45,7 +45,7 @@ export default function StaffDashboard({
       try {
         // Fetch Results
         const resResults = await fetch(
-          `http://localhost:8085/api/staff/${staff.staffId}/results`,
+          `https://lab-exam-backend.onrender.com/api/staff/${staff.staffId}/results`,
         );
         if (resResults.ok) {
           const data = await resResults.json();
@@ -58,7 +58,7 @@ export default function StaffDashboard({
 
         // Fetch Assignments
         const resAssignments = await fetch(
-          `http://localhost:8085/api/staff/assignments`,
+          `https://lab-exam-backend.onrender.com/api/staff/assignments`,
         );
         if (resAssignments.ok) {
           const assignments = await resAssignments.json();

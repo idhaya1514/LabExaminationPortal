@@ -17,7 +17,7 @@ export default function StaffLogin({
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8085/api/staff/login", {
+      const res = await fetch("https://lab-exam-backend.onrender.com/api/staff/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ staffId, password }),
