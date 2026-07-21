@@ -1,0 +1,13 @@
+﻿services:
+  - type: web
+    name: lab-exam-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DB_URL
+        value: jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+      - key: DB_USERNAME
+        value: postgres.cbhfjgnihkppdbwdqbmz
+      - key: DB_PASSWORD
+        sync: false
