@@ -244,12 +244,12 @@ export default function LoginPage({
     if (!password) return setError("Please create a password.");
     if (password.length < 6)
       return setError("Password must be at least 6 characters.");
-    if (!/^[a-zA-Z0-9]+$/.test(password))
+    if (password.length > 25)
+      return setError("Password must be at most 25 characters.");
+    if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(password))
       return setError(
-        "Password must be alphanumeric (letters and numbers only).",
+        "Password must contain at least one letter and one number.",
       );
-    if (!/^[A-Z]/.test(password))
-      return setError("Password must start with an uppercase letter.");
     if (password !== confirmPassword)
       return setError("Passwords do not match.");
 
@@ -301,10 +301,8 @@ export default function LoginPage({
     if (!loginPassword) return setError("Please enter your password.");
     if (loginPassword.length < 6)
       return setError("Password must be at least 6 characters.");
-    if (!/^[a-zA-Z0-9]+$/.test(loginPassword))
-      return setError(
-        "Password must be alphanumeric (letters and numbers only).",
-      );
+    if (loginPassword.length > 25)
+      return setError("Password must be at most 25 characters.");
 
     const schedErr = checkSchedule();
     if (schedErr) return setError(schedErr);
@@ -345,6 +343,10 @@ export default function LoginPage({
 
     if (!adminUsername.trim()) return setError("Please enter your username.");
     if (!adminPassword) return setError("Please enter your password.");
+    if (adminPassword.length < 6)
+      return setError("Password must be at least 6 characters.");
+    if (adminPassword.length > 25)
+      return setError("Password must be at most 25 characters.");
 
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 400));
@@ -370,10 +372,10 @@ export default function LoginPage({
     if (!staffPassword) return setError("Please enter your password.");
     if (staffPassword.length < 6)
       return setError("Password must be at least 6 characters.");
-    if (!/^[A-Z]/.test(staffPassword))
-      return setError("Password must start with an uppercase letter.");
-    if (!/(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/.test(staffPassword))
-      return setError("Password must include letters, numbers, and symbols.");
+    if (staffPassword.length > 25)
+      return setError("Password must be at most 25 characters.");
+    if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(staffPassword))
+      return setError("Password must contain at least one letter and one number.");
 
     setIsLoading(true);
     try {
@@ -792,7 +794,8 @@ export default function LoginPage({
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create password (min 6 chars)"
+                    placeholder="Min 6, max 25 chars (letters, numbers, symbols)"
+                    maxLength={25}
                     style={inputStyle}
                     onFocus={onInputFocus}
                     onBlur={onInputBlur}
