@@ -1,0 +1,9 @@
+com\examportal\repository\StaffRepository.class
+com\examportal\model\ExamResult.class
+com\examportal\BackendApplication.class
+com\examportal\controller\StaffController.class
+com\examportal\repository\ExamResultRepository.class
+com\examportal\repository\StaffStudentRepository.class
+com\examportal\model\Staff.class
+com\examportal\model\StaffStudent.class
+com\examportal\controller\ExamController.class
