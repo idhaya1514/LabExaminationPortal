@@ -1,30 +1,29 @@
-const { createClient } = require('@supabase/supabase-js');
+const { createClient } = require("@supabase/supabase-js");
 
-const supabaseUrl = 'https://cbhfjgnihkppdbwdqbmz.supabase.co';
-const supabaseKey = 'sb_publishable_tTmhoJNmwL9ksTdoiMlAiQ_jT-T7zAk';
+const supabaseUrl = "https://cbhfjgnihkppdbwdqbmz.supabase.co";
+const supabaseKey = "sb_publishable_tTmhoJNmwL9ksTdoiMlAiQ_jT-T7zAk";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function testInsert() {
   const row = {
-    student_register_number: 'E23AI011',
-    student_name: 'Idhaya',
-    student_department: 'AI & DS',
-    question: 'Add Two Numbers',
+    student_register_number: "E23AI011",
+    student_name: "Idhaya",
+    student_department: "AI & DS",
+    question: "Add Two Numbers",
     programming_marks: 0,
     mcq_marks: 0,
     observation_marks: 0,
     total_marks: 0,
     max_marks: 50,
-    code: '',
+    code: "",
     mcq_answers: {},
     time_spent: 120,
-    malpractice: true,
   };
 
   const { data, error } = await supabase
-    .from('exam_results')
+    .from("exam_results")
     .insert(row)
-    .select('id')
+    .select("id")
     .single();
 
   if (error) {
